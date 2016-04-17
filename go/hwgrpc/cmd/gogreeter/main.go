@@ -35,31 +35,35 @@ package main
 
 import (
 	"log"
-	"net"
+	"os"
 
-	"github.com/daved/hwgrpc/pb"
+	"github.com/daved/hwgrpc/go/hwgrpc/idl"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
 const (
-	port = ":50051"
+	address     = "localhost:50051"
+	defaultName = "world"
 )
 
-// server is used to implement helloworld.GreeterServer.
-type server struct{}
-
-// SayHello implements helloworld.GreeterServer
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
-}
-
 func main() {
-	lis, err := net.Listen("tcp", port)
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("did not connect: %v", err)
 	}
-	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
-	s.Serve(lis)
+	defer conn.Close()
+	c := idl.NewGreeterClient(conn)
+
+	// Contact the server and print out its response.
+	name := defaultName
+	if len(os.Args) > 1 {
+		name = os.Args[1]
+	}
+	r, err := c.SayHello(context.Background(), &idl.HelloRequest{Name: name})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	log.Printf("Greeting: %s", r.Message)
 }

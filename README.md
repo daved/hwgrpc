@@ -1,5 +1,7 @@
-# hwgrpc
+# hwgrpc / Hello World gRPC.io
 
-    go get github.com/daved/hwgrpc...
+gRPC examples in C++, C#, Go, Java, JavaScript, and Python.
 
-NOT READY - Do not use.
+## Notes
+
+It is preferable to use code generation.
